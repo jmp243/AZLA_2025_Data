@@ -1,0 +1,24 @@
+---
+title: "AZLA_data_demo"
+format: html
+editor: visual
+---
+
+# Jung Mee Park
+# jungmee.park@pima.gov
+# 2025-9-16
+
+Read in data from this URL - https://raw.githubusercontent.com/jmp243/AZLA_2025_Data/refs/heads/main/fake_program_data.csv
+
+```{r}
+library(readr)
+library(tidyverse)
+```
+
+You can add options to executable code like this
+
+```{r}
+data <- read.csv("https://raw.githubusercontent.com/jmp243/AZLA_2025_Data/refs/heads/main/fake_program_data.csv")
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
