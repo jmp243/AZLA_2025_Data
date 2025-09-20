@@ -5,7 +5,9 @@ editor: visual
 ---
 
 # Jung Mee Park
-# jungmee.park@pima.gov
+
+# jungmee.park\@pima.gov
+
 # 2025-9-16
 
 Read in data from this URL - https://raw.githubusercontent.com/jmp243/AZLA_2025_Data/refs/heads/main/fake_program_data.csv
@@ -15,10 +17,51 @@ library(readr)
 library(tidyverse)
 ```
 
-You can add options to executable code like this
-
 ```{r}
 data <- read.csv("https://raw.githubusercontent.com/jmp243/AZLA_2025_Data/refs/heads/main/fake_program_data.csv")
+
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+# Data analysis
+
+What type of data are we looking at?
+
+```{r}
+head(data)
+```
+
+```{r}
+cls <- sapply(data, class)
+cls <- as.data.frame(cls)
+cls
+```
+
+A summary is not too helpful when we only have one variable that is an integer.
+
+```{r}
+summary(data)
+```
+
+```{r}
+table(data$Branch.Location)
+```
+
+Look at other variables that way too.
+
+```{r}
+table(data$Target.Audience)
+```
+
+Create an reference number for each event
+
+```{r}
+data_with_ref <- data %>%
+  mutate(Reference_Number = row_number())
+
+```
+
+Parse out the age groups 
+
+```{r}
+
+```
