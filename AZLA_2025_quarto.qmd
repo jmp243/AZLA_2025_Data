@@ -64,4 +64,106 @@ Parse out the age groups
 
 ```{r}
 
+data2 <- data_with_ref %>%
+  # split Target.Audience at "&" and make multiple rows
+  separate_rows(Target.Audience, sep = " *& *")  %>%
+  # optional: trim whitespace
+  mutate(Target.Audience = trimws(Target.Audience))
 ```
+
+Create a new column where age distinctions do not matter
+```{r}
+library(stringr)
+
+data2_newAudience <- data2 %>%
+  mutate(
+    # extract everything before " (" (a space + "(") or just "("
+    AudienceGroup = str_trim(
+       str_replace(Target.Audience, "\\s*\\(.*", "")
+    )
+  )
+```
+
+look at the time of day when events were happening
+```{r}
+library(lubridate)
+# Using rowwise() to parse time
+
+data2_time <- data2_newAudience %>%
+  rowwise() %>%
+  mutate(
+    # Process one row at a time
+    time_parsed = {
+      time_str <- Time
+      if (is.na(time_str) || !is.character(time_str)) {
+        NA
+      } else if (grepl("AM|PM", time_str, ignore.case = TRUE)) {
+        parse_date_time(time_str, orders = c("I:M p", "H:M p"))
+      } else if (grepl(":", time_str, fixed = TRUE)) {
+        if (length(gregexpr(":", time_str)[[1]]) == 2) {
+          parse_date_time(time_str, orders = "H:M:S")
+        } else {
+          parse_date_time(time_str, orders = "H:M")
+        }
+      } else {
+        NA
+      }
+    }
+  ) %>%
+  ungroup() %>%
+  mutate(
+    time_24h = format(time_parsed, "%H:%M:%S"),
+    time_12h = format(time_parsed, "%I:%M:%S %p")
+  )
+
+```
+
+group into hours
+```{r}
+# group pits incidents by the hour
+
+# Group by hour
+data2_time$hour_group <- floor_date(data2_time$time_parsed, 
+                                               unit = "hour")
+data2_time$hour_label <- format(data2_time$hour_group, "%H:00")
+
+```
+
+
+# Visualizations
+```{r}
+library(plotly)
+# Group by hour and count events
+hourly_summary <- data2_time %>%
+  select(hour_label, Branch.Location, Attendance, time_parsed, Date) %>%
+  # mutate(hour_group = floor_date(time_parsed, unit = "hour")) %>%
+  group_by(hour_label) %>%
+  summarize(
+    Total_Hourly_Count = n(),
+    # other aggregate metrics as needed
+  )
+
+```
+You can see which hours had the most events.
+
+```{r}
+hourly_location_date_summary <- data2_time %>%
+  select(hour_label, hour_group, Attendance, AudienceGroup, Branch.Location, time_parsed, Date) %>%
+  # Group by date as well as hour and location
+  group_by(Date, hour_label, AudienceGroup, Branch.Location, Attendance) %>%
+  summarize(
+    count = n(),
+    .groups = "drop"
+  ) %>%
+  # Create a wide format with Location combinations as columns
+  pivot_wider(
+    id_cols = c(Date, hour_label),  # Keep Date2 as an identifier column
+    names_from = AudienceGroup,
+    values_from = Attendance,
+    values_fill = 0
+  )
+
+```
+
+creating a visualization can be helpful
+# Visualize branch data
