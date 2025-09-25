@@ -6,7 +6,7 @@ editor: visual
 
 # Jung Mee Park
 
-# jungmee.park\@pima.gov
+# jungmee.park@pima.gov
 
 # 2025-9-16
 
@@ -129,6 +129,11 @@ data2_time$hour_label <- format(data2_time$hour_group, "%H:00")
 
 ```
 
+# fix dates
+```{r}
+data2_time$Date <- as.Date(data2_time$Date,format = "%m/%d/%Y")
+```
+
 
 # Visualizations
 ```{r}
@@ -165,5 +170,157 @@ hourly_location_date_summary <- data2_time %>%
 
 ```
 
-creating a visualization can be helpful
-# Visualize branch data
+creating a visualization can be helpful.
+
+## group data by attendance
+```{r}
+# Load required libraries
+library(dplyr)
+library(plotly)
+
+# Aggregate attendance by hour_group and AudienceGroup
+plot_data <- data2_time %>%
+  mutate(hour_group = as.factor(hour_label)) %>%
+  group_by(hour_label, AudienceGroup) %>%
+  summarise(Total_Attendance = sum(Attendance, na.rm = TRUE), .groups = "drop")
+
+# Create interactive bar chart
+fig <- plot_ly(
+  data = plot_data,
+  x = ~hour_label,
+  y = ~Total_Attendance,
+  color = ~AudienceGroup,
+  type = "bar"
+)
+
+# Customize layout
+fig <- fig %>%
+  layout(
+    barmode = "stack",   # or "group" if you want side-by-side
+    xaxis = list(title = "Hour Label"),
+    yaxis = list(title = "Total Attendance"),
+    legend = list(title = list(text = "Audience Group"))
+  )
+
+fig
+```
+
+### change x-axis to dates
+```{r}
+# Load required libraries
+library(dplyr)
+library(plotly)
+
+# Aggregate attendance by hour_group and AudienceGroup
+plot_data <- data2_time %>%
+  mutate(hour_label = as.factor(hour_label)) %>%
+  group_by(Date, AudienceGroup) %>%
+  summarise(Total_Attendance = sum(Attendance, na.rm = TRUE), .groups = "drop")
+
+# Create interactive bar chart
+fig_date <- plot_ly(
+  data = plot_data,
+  x = ~Date,
+  y = ~Total_Attendance,
+  color = ~AudienceGroup,
+  type = "bar"
+)
+
+# Customize layout
+fig_date <- fig_date %>%
+  layout(
+    barmode = "stack",   # or "group" if you want side-by-side
+    xaxis = list(title = "Date"),
+    yaxis = list(title = "Total Attendance"),
+    legend = list(title = list(text = "Audience Group"))
+  )
+
+fig_date
+```
+
+
+## by branch type data graph
+```{r}
+# Aggregate attendance by hour_group and AudienceGroup
+branch_data <- data2_time %>%
+  group_by(hour_label, Branch.Location) %>%
+  summarise(Total_Attendance = sum(Attendance, na.rm = TRUE), .groups = "drop")
+
+# Create interactive bar chart
+fig2 <- plot_ly(
+  data = branch_data,
+  x = ~hour_label,
+  y = ~Total_Attendance,
+  color = ~Branch.Location,
+  type = "bar"
+)
+
+# Customize layout
+fig2 <- fig2 %>%
+  layout(
+    barmode = "stack",   # or "group" if you want side-by-side
+    xaxis = list(title = "Hour Label"),
+    yaxis = list(title = "Total Attendance"),
+    legend = list(title = list(text = "Branch Location"))
+  )
+
+fig2
+```
+
+## add a date slider
+```{r}
+# Prepare data: make sure Date is in Date format
+plot_data <- data2_time %>%
+  mutate(
+    Date = as.Date(Date),
+    hour_group = as.factor(hour_label)
+  ) %>%
+  group_by(Date, hour_label, AudienceGroup) %>%
+  summarise(Total_Attendance = sum(Attendance, na.rm = TRUE), .groups = "drop")
+
+# Build interactive bar chart
+fig <- plot_ly(
+  data = plot_data,
+  x = ~Date,
+  y = ~Total_Attendance,
+  color = ~AudienceGroup,
+  type = "bar",
+  hoverinfo = "text",
+  text = ~paste("Date:", Date,
+                "<br>Hour:", hour_label,
+                "<br>Audience:", AudienceGroup,
+                "<br>Attendance:", Total_Attendance)
+)
+
+# Layout with slider
+fig <- fig %>%
+  layout(
+    xaxis = list(
+      title = "Date",
+      rangeselector = list(
+        buttons = list(
+          list(count = 7, label = "1w", step = "day", stepmode = "backward"),
+          list(count = 1, label = "1m", step = "month", stepmode = "backward"),
+          list(step = "all")
+        )
+      ),
+      rangeslider = list(visible = TRUE),
+      type = "date"
+    ),
+    yaxis = list(title = "Total Attendance"),
+    barmode = "stack",
+    legend = list(title = list(text = "Audience Group"))
+  )
+
+fig
+```
+
+## create a shiny app
+```{r}
+library(shiny)
+library(dplyr)
+library(plotly)
+
+
+```
+
