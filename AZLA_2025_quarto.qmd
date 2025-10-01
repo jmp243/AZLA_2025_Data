@@ -10,6 +10,16 @@ editor: visual
 
 # 2025-9-16
 
+```{r}
+9+12
+```
+```{r}
+print(29+1)
+```
+```{r}
+print("hello world")
+```
+
 Read in data from this URL - https://raw.githubusercontent.com/jmp243/AZLA_2025_Data/refs/heads/main/fake_program_data.csv
 
 ```{r}
@@ -212,6 +222,9 @@ library(dplyr)
 library(plotly)
 
 # Aggregate attendance by hour_group and AudienceGroup
+data2_time <- data2_time %>% 
+  filter(Date >= 2025)
+
 plot_data <- data2_time %>%
   mutate(hour_label = as.factor(hour_label)) %>%
   group_by(Date, AudienceGroup) %>%
