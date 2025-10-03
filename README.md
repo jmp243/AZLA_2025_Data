@@ -8,3 +8,4 @@ https://posit.cloud/
 create the free account
 
 ## Access the code for the mock data
+AZLA_2025_quarto.qmd
