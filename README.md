@@ -5,4 +5,6 @@ The data will be a mock data of events attended.
 
 ## Create a posit cloud account
 https://posit.cloud/
+create the free account
 
+## Access the code for the mock data
